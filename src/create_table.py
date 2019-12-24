@@ -63,6 +63,18 @@ def main(PATH_DATA):
     filecounter = 0
     for filepath in Path(PATH_DATA).rglob('*.eml'):
         filecounter += 1
+    
+    date_add_list = []
+    n_mail_list = []
+    date_list = []
+    from_list = []
+    from_name_list = []
+    to_list = []
+    to_name_list = []
+    subject_list = []
+    attach_list = []
+    cc_list = []
+    cc_name_list = []
 
     #Обойти рекурсивно все файлы .eml в папке
     for file_name in tqdm(Path(PATH_DATA).rglob('*.eml'), total=filecounter,  unit="files"):
@@ -100,7 +112,7 @@ def main(PATH_DATA):
             subject = parsed_eml['header']['subject']
 
             try:
-                attach = parsed_eml['attachment'][0]['filename'], parsed_eml['attachment'][0]['extension']
+                attach = parsed_eml['attachment'][0]['filename']
             except:
                 attach = None
             try:
@@ -121,23 +133,36 @@ def main(PATH_DATA):
 
             #print()
             #print({ 'date_add' : date_add, 'n_mail' : n_mail,'date' : date, 'from_': from_, 'from_name':from_name, 'to_':to_, 'to_name':to_name, 'subject':subject, 'attach':attach,'cc':list_email, 'cc_name':list_name})
+            date_add_list.append(date_add)
+            n_mail_list.append(n_mail)
+            date_list.append(date)
+            from_list.append(from_)
+            from_name_list.append(from_name)
+            to_list.append(to_)
+            to_name_list.append(to_name)
+            subject_list.append(subject)
+            attach_list.append(attach)
+            cc_list.append(list_email)
+            cc_name_list.append(list_name)
 
-            df = pd.DataFrame({ 'date_add' : [date_add], 'n_mail' : [n_mail],'date' : [date], 'from_': [from_], 'from_name':[from_name], 'to_':[to_], 'to_name':[to_name], 'subject':[subject], 'attach':[attach],'cc':[list_email], 'cc_name':[list_name]})
 
-            df['n_mail'] = df['n_mail'].apply(lambda x: make_hyperlink(x))
-            # df.reset_index().style.format({'n_mail': make_hyperlink})
-            writer = pd.ExcelWriter(name_file, engine='openpyxl')
+    # df = pd.DataFrame({ 'date_add' : [date_add], 'n_mail' : [n_mail],'date' : [date], 'from_': [from_], 'from_name':[from_name], 'to_':[to_], 'to_name':[to_name], 'subject':[subject], 'attach':[attach],'cc':[list_email], 'cc_name':[list_name]})
+    df = pd.DataFrame({'date_add': date_add_list, 'n_mail': n_mail_list, 'date': date_list, \
+            'from_': from_list, 'from_name': from_name_list, 'to_': to_list, 'to_name': to_name_list, \
+            'subject': subject_list, 'attach':attach_list,'cc': cc_list, 'cc_name': cc_name_list})
+    
+    df['n_mail'] = df['n_mail'].apply(lambda x: make_hyperlink(x))
+    # df.reset_index().style.format({'n_mail': make_hyperlink})
+    writer = pd.ExcelWriter(name_file, engine='openpyxl')
+    writer.book = load_workbook(name_file)
+    writer.sheets = dict((ws.title, ws) for ws in writer.book.worksheets)
+    # read existing file
+    reader = pd.read_excel(name_file)
+    
+    # write out the new sheet
+    df.to_excel(writer,index=False,header=False,startrow=len(reader)+1)
 
-            writer.book = load_workbook(name_file)
-
-            writer.sheets = dict((ws.title, ws) for ws in writer.book.worksheets)
-            # read existing file
-            reader = pd.read_excel(name_file)
-            
-            # write out the new sheet
-            df.to_excel(writer,index=False,header=False,startrow=len(reader)+1)
-
-            writer.close()
+    writer.close()
 
 
 
