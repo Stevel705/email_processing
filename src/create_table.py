@@ -61,7 +61,7 @@ def main(PATH_DATA):
     check_exists(name_file)
 
     filecounter = 0
-    for filepath in Path(PATH_DATA).rglob('*.eml'):
+    for _ in Path(PATH_DATA).rglob('*.eml'):
         filecounter += 1
     
     date_add_list = []

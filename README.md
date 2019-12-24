@@ -25,7 +25,11 @@ python create_table.py --path yourPathFolder
 
 
 
-3. Делаем xlsx файл с фильтрацией по email
+3. Делаем xlsx файл с фильтрацией по email в столбцах "from_", "to_", "cc"
+```
+cd src
+python filter_email.py --email example@example.com
+```
 
 
 
@@ -33,3 +37,4 @@ python create_table.py --path yourPathFolder
 - [ ] Исправить ошибку Error parsing date 
 - [ ] Проверить парсинг to_name в файлах list.txt
 - [ ] Сделать обработку hyperlink
+- [ ] Добавить Логгер
