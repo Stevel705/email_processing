@@ -1,6 +1,7 @@
 *.eml
 *.xlsx
 *.csv
+*.log
 mailbox*
 /json_file
 list.txt

@@ -19,6 +19,7 @@ import eml_parser
 import os
 import glob
 from tqdm import tqdm
+import logging
 
 
 # сделать гиперссылку для файла в xlsx 
@@ -56,6 +57,7 @@ def check_exists(name_file):
 #             yield os.path.abspath(os.path.join(dirpath, filename))
 
 def main(PATH_DATA):
+    logging.basicConfig(filename="logging_file_except.log", level=logging.INFO)
     name_file = "Table.xlsx" #+ datetime.datetime.today().strftime("%m.%d.%Y")
     # Проверить, существует ли файл
     check_exists(name_file)
@@ -87,18 +89,21 @@ def main(PATH_DATA):
             n_mail = file_name
             date = parsed_eml['header']['date']
             try:
-                # print(date)
                 date = date.strftime("%m.%d.%Y")
             except:
-                # print(date)
                 date = date_add
+                logging.info("Date: Bad File is: %s" % (file_name))
+
             from_ = parsed_eml['header']['from']
             from_name = parsed_eml['header']['header']['from'][0].rsplit(' <')[0]
 
             try:
                 to_ = parsed_eml['header']['to'][0]
-            except:
+            except Exception:
                 to_ = parsed_eml['header']['delivered_to'][1]
+            except Exception:
+                logging.info("To: Bad File is: %s" % (file_name))
+            
             try:
                 if len(parsed_eml['header']['header']['to'][0].split()) > 1:
                     to_name = parsed_eml['header']['header']['to'][0].split()[0]
@@ -115,6 +120,7 @@ def main(PATH_DATA):
                 attach = parsed_eml['attachment'][0]['filename']
             except:
                 attach = None
+            
             try:
                 cc = parsed_eml['header']['header']['cc'][0].split(',')
                 list_name = []
@@ -163,6 +169,7 @@ def main(PATH_DATA):
     df.to_excel(writer,index=False,header=False,startrow=len(reader)+1)
 
     writer.close()
+    logging.info("DONE")
 
 
 
