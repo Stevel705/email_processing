@@ -20,7 +20,7 @@ python extract_mailbox.py --path yourPathFolder
 2. Составим xlsx файл из файлов .eml
 ```
 cd src
-python create_table.py --path yourPathFolder
+python create_table.py --path yourPathFolder --output name
 ```
 
 
