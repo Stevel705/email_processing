@@ -65,7 +65,7 @@ def main(PATH_DATA, name_table):
     
     name_file = name_table + ".xlsx"  #+ datetime.datetime.today().strftime("%m.%d.%Y")
     # Проверить, существует ли файл
-    check_exists(name_file)
+    # check_exists(name_file)
 
     filecounter = 0
     for _ in Path(PATH_DATA).rglob('*.eml'):
@@ -154,13 +154,15 @@ def main(PATH_DATA, name_table):
 
     # writer.close()
 
-    writer = pd.ExcelWriter(name_file, engine='xlsxwriter')
+    # writer = pd.ExcelWriter(name_file, engine='xlsxwriter')
 
-    # Convert the dataframe to an XlsxWriter Excel object.
-    df.to_excel(writer, sheet_name='Sheet1', index=False)
+    # # Convert the dataframe to an XlsxWriter Excel object.
+    # df.to_excel(writer, sheet_name='Sheet1', index=False)
 
-    # Close the Pandas Excel writer and output the Excel file.
-    writer.save()
+    # # Close the Pandas Excel writer and output the Excel file.
+    # writer.save()
+    
+    df.to_csv(name_file, index=False)
     
     logging.info("DONE")
 
