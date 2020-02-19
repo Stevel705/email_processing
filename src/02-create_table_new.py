@@ -59,7 +59,7 @@ def check_exists(name_file):
 #             yield os.path.abspath(os.path.join(dirpath, filename))
 
 def main(PATH_DATA, name_table):
-    logging.basicConfig(filename="logging_file_except.log", level=logging.INFO)
+    logging.basicConfig(filename="logging.log", level=logging.INFO)
     # logging.debug('This will get logged')
     mylogger = logging.getLogger('Create_Table')
     
@@ -92,6 +92,7 @@ def main(PATH_DATA, name_table):
                 mail = mailparser.parse_from_bytes(raw_email)
 
                 date_add = datetime.datetime.today().strftime("%m.%d.%Y")
+
                 n_mail = file_name
 
                 date = mail.date
@@ -114,8 +115,8 @@ def main(PATH_DATA, name_table):
                 if elements:
                     list_name = [x[0] for x in elements]
                     list_email = [x[1] for x in elements]
-                    list_name = str(list_name).strip('[]')
-                    list_email = str(list_email).strip('[]')
+                    list_name = str(list_name).strip('[]').replace('\'', '')
+                    list_email = str(list_email).strip('[]').replace('\'', '')
                 else:
                     list_name = None
                     list_email = None
@@ -129,8 +130,8 @@ def main(PATH_DATA, name_table):
                 to_name_list.append(to_name)
                 subject_list.append(subject)
                 attach_list.append(attach)
-                cc_list.append(list_name)
-                cc_name_list.append(list_email)
+                cc_list.append(list_email)
+                cc_name_list.append(list_name)
         except:
             print(file_name)
             mylogger.error("can't read" + str(file_name))
@@ -142,16 +143,25 @@ def main(PATH_DATA, name_table):
     
     df['n_mail'] = df['n_mail'].apply(lambda x: make_hyperlink(x))
     # df.reset_index().style.format({'n_mail': make_hyperlink})
-    writer = pd.ExcelWriter(name_file, engine='openpyxl')
-    writer.book = load_workbook(name_file)
-    writer.sheets = dict((ws.title, ws) for ws in writer.book.worksheets)
-    # read existing file
-    reader = pd.read_excel(name_file)
+    # writer = pd.ExcelWriter(name_file, engine='openpyxl')
+    # writer.book = load_workbook(name_file)
+    # writer.sheets = dict((ws.title, ws) for ws in writer.book.worksheets)
+    # # read existing file
+    # reader = pd.read_excel(name_file)
     
-    # write out the new sheet
-    df.to_excel(writer,index=False,header=False,startrow=len(reader)+1)
+    # # write out the new sheet
+    # df.to_excel(writer,index=False,header=False,startrow=len(reader)+1)
 
-    writer.close()
+    # writer.close()
+
+    writer = pd.ExcelWriter(name_file, engine='xlsxwriter')
+
+    # Convert the dataframe to an XlsxWriter Excel object.
+    df.to_excel(writer, sheet_name='Sheet1', index=False)
+
+    # Close the Pandas Excel writer and output the Excel file.
+    writer.save()
+    
     logging.info("DONE")
 
 
