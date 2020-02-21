@@ -1,8 +1,13 @@
 *.eml
 *.xlsx
+*.xlsx#
 *.csv
 *.log
 mailbox*
+
 /json_file
+.ipynb_checkpoints
+__pycache__
+
 list.txt
-mailparser
+mailparser.*

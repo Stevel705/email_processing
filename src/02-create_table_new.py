@@ -101,8 +101,14 @@ def main(PATH_DATA, name_table):
                 
                 from_name = mail.from_[0][0]
 
-                to_ = mail.to[0][1]
-                to_name = mail.to[0][0]
+                emails_to = mail.to
+                to_ = [x[1] for x in emails_to]
+                
+                emails_to_name = mail.to
+                to_name = [x[0] for x in emails_to_name]
+                
+                to_ = str(to_).strip('[]').replace('\'', '')
+                to_name = str(to_name).strip('[]').replace('\'', '')
 
                 subject = mail.subject
 

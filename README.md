@@ -32,9 +32,3 @@ python filter_email.py --email example@example.com
 ```
 
 
-
-#### TODO:
-- [ ] Исправить ошибку Error parsing date 
-- [ ] Проверить парсинг to_name в файлах list.txt
-- [ ] Сделать обработку hyperlink
-- [ ] Добавить Логгер
