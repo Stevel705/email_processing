@@ -20,6 +20,8 @@ import os
 import glob
 from tqdm import tqdm
 import logging
+import mailparser
+
 
 
 # сделать гиперссылку для файла в xlsx 
@@ -56,11 +58,14 @@ def check_exists(name_file):
 #         for filename in files:
 #             yield os.path.abspath(os.path.join(dirpath, filename))
 
-def main(PATH_DATA):
-    logging.basicConfig(filename="logging_file_except.log", level=logging.INFO)
-    name_file = "Table.xlsx" #+ datetime.datetime.today().strftime("%m.%d.%Y")
+def main(PATH_DATA, name_table):
+    logging.basicConfig(filename="logging.log", level=logging.INFO)
+    # logging.debug('This will get logged')
+    mylogger = logging.getLogger('Create_Table')
+    
+    name_file = name_table + ".csv"  #+ datetime.datetime.today().strftime("%m.%d.%Y")
     # Проверить, существует ли файл
-    check_exists(name_file)
+    # check_exists(name_file)
 
     filecounter = 0
     for _ in Path(PATH_DATA).rglob('*.eml'):
@@ -79,96 +84,92 @@ def main(PATH_DATA):
     cc_name_list = []
 
     #Обойти рекурсивно все файлы .eml в папке
-    for file_name in tqdm(Path(PATH_DATA).rglob('*.eml'), total=filecounter,  unit="files"):
-        with open(file_name, 'rb') as fhdl:
-            raw_email = fhdl.read()
+    for file_name in tqdm(Path(PATH_DATA).rglob('*.eml'), total=filecounter, unit="files"):
+        try:
+            with open(file_name, 'rb') as fhdl:
+                raw_email = fhdl.read()
 
-            parsed_eml = eml_parser.eml_parser.decode_email_b(raw_email)
+                mail = mailparser.parse_from_bytes(raw_email)
 
-            date_add = datetime.datetime.today().strftime("%m.%d.%Y")
-            n_mail = file_name
-            date = parsed_eml['header']['date']
-            try:
-                date = date.strftime("%m.%d.%Y")
-            except:
-                date = date_add
-                logging.info("Date: Bad File is: %s" % (file_name))
+                date_add = datetime.datetime.today().strftime("%m.%d.%Y")
 
-            from_ = parsed_eml['header']['from']
-            from_name = parsed_eml['header']['header']['from'][0].rsplit(' <')[0]
+                n_mail = file_name
 
-            try:
-                to_ = parsed_eml['header']['to'][0]
-            except Exception:
-                to_ = parsed_eml['header']['delivered_to'][1]
-            except Exception:
-                logging.info("To: Bad File is: %s" % (file_name))
-            
-            try:
-                if len(parsed_eml['header']['header']['to'][0].split()) > 1:
-                    to_name = parsed_eml['header']['header']['to'][0].split()[0]
+                date = mail.date
+
+                from_ = mail.from_[0][1]
+                
+                from_name = mail.from_[0][0]
+
+                emails_to = mail.to
+                to_ = [x[1] for x in emails_to]
+                
+                emails_to_name = mail.to
+                to_name = [x[0] for x in emails_to_name]
+                
+                to_ = str(to_).strip('[]').replace('\'', '')
+                to_name = str(to_name).strip('[]').replace('\'', '')
+
+                subject = mail.subject
+
+                if mail.attachments:
+                    attach = mail.attachments[0]['filename']
                 else:
-                    to_name = None
-            except:
-                to_name = None
-                #print(file_name)
+                    attach = None
             
+                elements = mail.cc
+                if elements:
+                    list_name = [x[0] for x in elements]
+                    list_email = [x[1] for x in elements]
+                    list_name = str(list_name).strip('[]').replace('\'', '')
+                    list_email = str(list_email).strip('[]').replace('\'', '')
+                else:
+                    list_name = None
+                    list_email = None
 
-            subject = parsed_eml['header']['subject']
+                date_add_list.append(date_add)
+                n_mail_list.append(n_mail)
+                date_list.append(date)
+                from_list.append(from_)
+                from_name_list.append(from_name)
+                to_list.append(to_)
+                to_name_list.append(to_name)
+                subject_list.append(subject)
+                attach_list.append(attach)
+                cc_list.append(list_email)
+                cc_name_list.append(list_name)
+        except:
+            print(file_name)
+            mylogger.error("can't read" + str(file_name))
+            continue
 
-            try:
-                attach = parsed_eml['attachment'][0]['filename']
-            except:
-                attach = None
-            
-            try:
-                cc = parsed_eml['header']['header']['cc'][0].split(',')
-                list_name = []
-                # print(cc)
-                list_email = parsed_eml['header']['cc']
-                for inputstr in cc:
-                    words = inputstr.split()
-                    list_name.append(([words[index]+' '+words[index+1]
-                                    for index in range(len(words)-2)]))
-            except:
-                list_name = None
-                list_email = None
-
-            if list_name:
-                list_name = reduce(operator.iconcat, list_name, [])
-
-            #print()
-            #print({ 'date_add' : date_add, 'n_mail' : n_mail,'date' : date, 'from_': from_, 'from_name':from_name, 'to_':to_, 'to_name':to_name, 'subject':subject, 'attach':attach,'cc':list_email, 'cc_name':list_name})
-            date_add_list.append(date_add)
-            n_mail_list.append(n_mail)
-            date_list.append(date)
-            from_list.append(from_)
-            from_name_list.append(from_name)
-            to_list.append(to_)
-            to_name_list.append(to_name)
-            subject_list.append(subject)
-            attach_list.append(attach)
-            cc_list.append(list_email)
-            cc_name_list.append(list_name)
-
-
-    # df = pd.DataFrame({ 'date_add' : [date_add], 'n_mail' : [n_mail],'date' : [date], 'from_': [from_], 'from_name':[from_name], 'to_':[to_], 'to_name':[to_name], 'subject':[subject], 'attach':[attach],'cc':[list_email], 'cc_name':[list_name]})
     df = pd.DataFrame({'date_add': date_add_list, 'n_mail': n_mail_list, 'date': date_list, \
             'from_': from_list, 'from_name': from_name_list, 'to_': to_list, 'to_name': to_name_list, \
             'subject': subject_list, 'attach':attach_list,'cc': cc_list, 'cc_name': cc_name_list})
     
     df['n_mail'] = df['n_mail'].apply(lambda x: make_hyperlink(x))
     # df.reset_index().style.format({'n_mail': make_hyperlink})
-    writer = pd.ExcelWriter(name_file, engine='openpyxl')
-    writer.book = load_workbook(name_file)
-    writer.sheets = dict((ws.title, ws) for ws in writer.book.worksheets)
-    # read existing file
-    reader = pd.read_excel(name_file)
+    # writer = pd.ExcelWriter(name_file, engine='openpyxl')
+    # writer.book = load_workbook(name_file)
+    # writer.sheets = dict((ws.title, ws) for ws in writer.book.worksheets)
+    # # read existing file
+    # reader = pd.read_excel(name_file)
     
-    # write out the new sheet
-    df.to_excel(writer,index=False,header=False,startrow=len(reader)+1)
+    # # write out the new sheet
+    # df.to_excel(writer,index=False,header=False,startrow=len(reader)+1)
 
-    writer.close()
+    # writer.close()
+
+    # writer = pd.ExcelWriter(name_file, engine='xlsxwriter')
+
+    # # Convert the dataframe to an XlsxWriter Excel object.
+    # df.to_excel(writer, sheet_name='Sheet1', index=False)
+
+    # # Close the Pandas Excel writer and output the Excel file.
+    # writer.save()
+    
+    df.to_csv(name_file, index=False)
+    
     logging.info("DONE")
 
 
@@ -177,6 +178,8 @@ def main(PATH_DATA):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='workflow_test')
     parser.add_argument("--path", default=1, help="This is the path to folder with eml or tar.gz")
+    parser.add_argument("--output", default=1, help="Name of output file")
     args = parser.parse_args()
     path = args.path
-    main(path)
+    name_table = args.output
+    main(path, name_table)

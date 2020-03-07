@@ -2,5 +2,5 @@ pandas==0.25.3
 xlsxwriter==1.2.6
 xlrd==1.2.0
 openpyxl==3.0.1
-eml_parser
+eml_parser==1.11.6
 mail-parser==3.12.0
