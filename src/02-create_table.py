@@ -113,7 +113,8 @@ def main(PATH_DATA, name_table):
                 subject = mail.subject
 
                 if mail.attachments:
-                    attach = mail.attachments[0]['filename']
+                    attach = [x['filename'] for x in mail.attachments]
+                    attach = str(attach).strip('[]').replace('\'', '')
                 else:
                     attach = None
             
