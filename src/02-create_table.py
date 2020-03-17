@@ -59,7 +59,7 @@ def check_exists(name_file):
 #             yield os.path.abspath(os.path.join(dirpath, filename))
 
 def main(PATH_DATA, name_table):
-    logging.basicConfig(filename="logging.log", level=logging.INFO)
+    logging.basicConfig(filename="log/logging.log", level=logging.INFO)
     # logging.debug('This will get logged')
     mylogger = logging.getLogger('Create_Table')
     
@@ -141,7 +141,7 @@ def main(PATH_DATA, name_table):
                 cc_name_list.append(list_name)
         except:
             print(file_name)
-            mylogger.error("can't read" + str(file_name))
+            mylogger.error("can't read " + str(file_name))
             continue
 
     df = pd.DataFrame({'date_add': date_add_list, 'n_mail': n_mail_list, 'date': date_list, \
