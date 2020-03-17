@@ -8,12 +8,12 @@
 # сс_name - имена, кому направлялись копии
 # subject - тема письма
 # attach - название вложения и его тип файла
-from openpyxl import load_workbook
-from functools import reduce
+# from openpyxl import load_workbook
+# from functools import reduce
+# import operator
 from pathlib import Path
 import pandas as pd
 import argparse
-import operator
 import datetime
 import eml_parser
 import os
